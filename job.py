@@ -75,9 +75,10 @@ class Task:
 		self.lengthapprox = length
 		if lengthapprox != None:
 			self.lengthapprox = lengthapprox
+		self.gauss = None # Task length distribution in %
 		self.attempts = {}
 		self.nattempts = 0
-		self.status = 'QUEUED' # QUEUED -> RUNNING -> SUCCEEDED | DROPPED
+		self.status = 'QUEUED' # Status: QUEUED -> RUNNING -> SUCCEEDED | DROPPED
 	
 	def isQueued(self):
 		if len(self.attempts) == 0:
@@ -99,8 +100,9 @@ class Task:
 			self.nattempts += 1
 			attemptId = (self.taskId+'_%d' % self.nattempts).replace('task_', 'attempt_')
 			seconds = self.length if not approx else self.lengthapprox
-			if isRealistic():
-				seconds = random.gauss(seconds, 0.05*seconds) # 5% variance
+			if self.gauss != None:
+				seconds = random.gauss(seconds, self.gauss/100.0*seconds)
+				# Minimum task length
 				if seconds < 3:
 					seconds = 3
 			attempt = Attempt(attemptId=attemptId, task=self, seconds=seconds, approx=approx)
