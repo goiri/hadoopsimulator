@@ -38,6 +38,9 @@ class Simulator:
 		# Id for jobs
 		self.trackerId = datetime.now().strftime('%4Y%2m%2d%2H%2M')
 		
+		# Specify if the nodes are sent to sleep when there's no load
+		self.nodeManagement = True
+		
 		# Outputs
 		self.energy = None
 	
@@ -261,45 +264,46 @@ class Simulator:
 			# Node management
 			# =====================================================
 			# Check if we need less nodes. Idle nodes.
-			lessNodes = 0
-			lessNodes = min(len(self.getIdleNodesMap()), len(self.getIdleNodesRed()))
-			# Check if we need more nodes. Size of the queues.
-			moreNodes = 0
-			if lessNodes == 0:
-				moreNodesMaps = math.ceil(1.0*self.mapQueued() / 3) - self.getWakingNodes()
-				moreNodesReds = math.ceil(self.redQueued() / 1) - self.getWakingNodes()
-				moreNodes = max(moreNodesMaps, moreNodesReds, 0)
-			# Change node status
-			for node in self.nodes.values():
-				if node.status == 'ON' and not self.isNodeRequired(node.nodeId) and lessNodes > 0:
-					lessNodes -= 1
-					seconds = node.timeSleep
-					if isRealistic():
-						seconds = random.gauss(seconds, 0.1*seconds) #+/-10%
-					node.status = 'SLEEPING-%d' % seconds
-					self.history.logNodeStatus(self.t, node)
-				elif node.status == 'SLEEP' and moreNodes > 0:
-					moreNodes -= 1
-					seconds = node.timeWake
-					if isRealistic():
-						seconds = random.gauss(seconds, 0.1*seconds) #+/-10%
-					node.status = 'WAKING-%d' % seconds
-					self.history.logNodeStatus(self.t, node)
-				# Transition status
-				elif node.status.startswith('SLEEPING-'):
-					seconds = int(node.status[len('SLEEPING-'):]) - 1
-					if seconds <= 0:
-						node.status = 'SLEEP'
-						self.history.logNodeStatus(self.t, node)
-					else:
+			if self.nodeManagement:
+				lessNodes = 0
+				lessNodes = min(len(self.getIdleNodesMap()), len(self.getIdleNodesRed()))
+				# Check if we need more nodes. Size of the queues.
+				moreNodes = 0
+				if lessNodes == 0:
+					moreNodesMaps = math.ceil(1.0*self.mapQueued() / 3) - self.getWakingNodes()
+					moreNodesReds = math.ceil(self.redQueued() / 1) - self.getWakingNodes()
+					moreNodes = max(moreNodesMaps, moreNodesReds, 0)
+				# Change node status
+				for node in self.nodes.values():
+					if node.status == 'ON' and not self.isNodeRequired(node.nodeId) and lessNodes > 0:
+						lessNodes -= 1
+						seconds = node.timeSleep
+						if isRealistic():
+							seconds = random.gauss(seconds, 0.1*seconds) #+/-10%
 						node.status = 'SLEEPING-%d' % seconds
-				elif node.status.startswith('WAKING-'):
-					seconds = int(node.status[len('WAKING-'):])   - 1
-					if seconds <= 0:
-						node.status = 'ON'
 						self.history.logNodeStatus(self.t, node)
-					else:
+					elif node.status == 'SLEEP' and moreNodes > 0:
+						moreNodes -= 1
+						seconds = node.timeWake
+						if isRealistic():
+							seconds = random.gauss(seconds, 0.1*seconds) #+/-10%
 						node.status = 'WAKING-%d' % seconds
+						self.history.logNodeStatus(self.t, node)
+					# Transition status
+					elif node.status.startswith('SLEEPING-'):
+						seconds = int(node.status[len('SLEEPING-'):]) - 1
+						if seconds <= 0:
+							node.status = 'SLEEP'
+							self.history.logNodeStatus(self.t, node)
+						else:
+							node.status = 'SLEEPING-%d' % seconds
+					elif node.status.startswith('WAKING-'):
+						seconds = int(node.status[len('WAKING-'):])   - 1
+						if seconds <= 0:
+							node.status = 'ON'
+							self.history.logNodeStatus(self.t, node)
+						else:
+							node.status = 'WAKING-%d' % seconds
 			# Account for power
 			power = 0.0
 			for node in self.nodes.values():
