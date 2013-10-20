@@ -141,10 +141,10 @@ class Job:
 	# Job status
 	#  QUEUED -> RUNNING -> SUCCEEDED | DROPPED
 	class Status:
-		QUEUED    = 0 #'QUEUED'
-		RUNNING   = 1
-		SUCCEEDED = 2
-		DROPPED   = 3 
+		QUEUED    = 0 # 'QUEUED'
+		RUNNING   = 1 # 'RUNNING'
+		SUCCEEDED = 2 # 'SUCCEEDED'
+		DROPPED   = 3 # 'DROPPED'
 	
 	def __init__(self, jobId=None, nmaps=16, lmap=60, lmapapprox=None, nreds=1, lred=30, lredapprox=None, submit=0):
 		self.jobId = jobId
