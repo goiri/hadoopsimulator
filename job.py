@@ -23,14 +23,14 @@ class Attempt:
 		self.nodeId = None
 		self.start = None
 		self.finish = None
-		self.status = 'QUEUED' # QUEUED -> RUNNING -> SUCCEEDED | DROPPED
+		self.status = Job.Priority.QUEUED
 	
 	def progress(self, p):
 		self.seconds -= p
 	
 	def drop(self):
 		self.seconds = 0
-		self.status = 'DROPPED'
+		self.status = Job.Priority.DROPPED
 	
 	def isCompleted(self):
 		return self.seconds <= 0
@@ -78,14 +78,14 @@ class Task:
 		self.gauss = None # Task length distribution in %
 		self.attempts = {}
 		self.nattempts = 0
-		self.status = 'QUEUED' # Status: QUEUED -> RUNNING -> SUCCEEDED | DROPPED
+		self.status = Job.Priority.QUEUED # Status: QUEUED -> RUNNING -> SUCCEEDED | DROPPED
 	
 	def isQueued(self):
 		if len(self.attempts) == 0:
 			return True
 		else:
 			for attempt in self.attempts.values():
-				if attempt.status == 'QUEUED':
+				if attempt.status == Job.Priority.QUEUED:
 					return True
 		return False
 	
@@ -110,7 +110,7 @@ class Task:
 			return attempt
 		else:
 			for attempt in self.attempts.values():
-				if attempt.status == 'QUEUED':
+				if attempt.status == Job.Priority.QUEUED:
 					return attempt
 		return None
 	
@@ -133,10 +133,18 @@ class Job:
 	# Job priorities
 	class Priority:
 		VERY_HIGH = 5
-		HIGH = 4
-		NORMAL = 3
-		LOW = 2
-		VERY_LOW = 1
+		HIGH      = 4
+		NORMAL    = 3
+		LOW       = 2
+		VERY_LOW  = 1
+	
+	# Job status
+	#  QUEUED -> RUNNING -> SUCCEEDED | DROPPED
+	class Status:
+		QUEUED    = 0 #'QUEUED'
+		RUNNING   = 1
+		SUCCEEDED = 2
+		DROPPED   = 3 
 	
 	def __init__(self, jobId=None, nmaps=16, lmap=60, lmapapprox=None, nreds=1, lred=30, lredapprox=None, submit=0):
 		self.jobId = jobId
@@ -179,7 +187,7 @@ class Job:
 	'''
 	def reset(self):
 		# Mark it as queued
-		self.status = 'QUEUED'
+		self.status = Job.Priority.QUEUED
 		# Reset Tasks
 		self.cmaps = 0
 		self.creds = 0
