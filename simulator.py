@@ -221,7 +221,7 @@ class Simulator:
 			
 			for job in completedJobs:
 				job.finish = self.t
-				job.status = 'SUCCEEDED'
+				job.status = Job.Status.SUCCEEDED
 				# Update queues
 				self.jobsQueue.remove(job.jobId)
 				self.jobsDone.append(job.jobId)

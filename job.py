@@ -23,14 +23,14 @@ class Attempt:
 		self.nodeId = None
 		self.start = None
 		self.finish = None
-		self.status = Job.Priority.QUEUED
+		self.status = Job.Status.QUEUED
 	
 	def progress(self, p):
 		self.seconds -= p
 	
 	def drop(self):
 		self.seconds = 0
-		self.status = Job.Priority.DROPPED
+		self.status = Job.Status.DROPPED
 	
 	def isCompleted(self):
 		return self.seconds <= 0
@@ -78,14 +78,14 @@ class Task:
 		self.gauss = None # Task length distribution in %
 		self.attempts = {}
 		self.nattempts = 0
-		self.status = Job.Priority.QUEUED # Status: QUEUED -> RUNNING -> SUCCEEDED | DROPPED
+		self.status = Job.Status.QUEUED # Status: QUEUED -> RUNNING -> SUCCEEDED | DROPPED
 	
 	def isQueued(self):
 		if len(self.attempts) == 0:
 			return True
 		else:
 			for attempt in self.attempts.values():
-				if attempt.status == Job.Priority.QUEUED:
+				if attempt.status == Job.Status.QUEUED:
 					return True
 		return False
 	
@@ -110,7 +110,7 @@ class Task:
 			return attempt
 		else:
 			for attempt in self.attempts.values():
-				if attempt.status == Job.Priority.QUEUED:
+				if attempt.status == Job.Status.QUEUED:
 					return attempt
 		return None
 	
@@ -120,7 +120,7 @@ class Task:
 			self.nattempts += 1
 			attemptId = (self.taskId+'_%04d' % self.nattempts).replace('task_', 'attempt_')
 			attempt = Attempt(attemptId=attemptId, task=self, seconds=0)
-			attempt.status = 'DROPPED'
+			attempt.status = Job.Status.DROPPED
 			self.attempts[attempt.attemptId] = attempt
 		
 	def getJob(self):
@@ -187,7 +187,7 @@ class Job:
 	'''
 	def reset(self):
 		# Mark it as queued
-		self.status = Job.Priority.QUEUED
+		self.status = Job.Status.QUEUED
 		# Reset Tasks
 		self.cmaps = 0
 		self.creds = 0
@@ -296,18 +296,18 @@ class Job:
 			for mapTask in self.maps.values():
 				if mapTask.taskId == attempt.getTaskId():
 					if drop:
-						mapTask.status = 'DROPPED'
+						mapTask.status = Job.Status.DROPPED
 					else:
-						mapTask.status = 'SUCCEEDED'
+						mapTask.status = Job.Status.SUCCEEDED
 					self.cmaps += 1
 		# Reduce
 		else:
 			for redTask in self.reds.values():
 				if redTask.taskId == attempt.getTaskId():
 					if drop:
-						redTask.status = 'DROPPED'
+						redTask.status = Job.Status.DROPPED
 					else:
-						redTask.status = 'SUCCEEDED'
+						redTask.status = Job.Status.SUCCEEDED
 					self.creds += 1
 			if self.creds >= len(self.reds):
 				ret.append(self)
