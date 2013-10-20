@@ -1,6 +1,7 @@
 #!/usr/bin/env pypy
 
 from commons import isRealistic
+from commons import Constants
 
 import random
 if not isRealistic():
@@ -139,6 +140,8 @@ class Job:
 		self.lmapapprox = lmapapprox if lmapapprox != None else self.lmap
 		self.lredapprox = lredapprox if lredapprox != None else self.lred
 		self.submit = submit # Submission time
+		
+		self.priority = Constants.NORMAL
 		
 		# Set queue execution state
 		self.reset()

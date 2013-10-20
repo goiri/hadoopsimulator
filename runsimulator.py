@@ -3,10 +3,26 @@
 from optparse import OptionParser
 
 import random
+import sys
 
+from commons import Constants
 from simulator import Simulator
 from node import Node
 from job import Job
+
+def unit_test():
+	for i in range(0, 20):
+		job = Job(nmaps=64, lmap=140, lmapapprox=60, nreds=1, lred=15, submit=i*150)
+		job.approxAlgoMapVal = options.approx # Approximate 50% of the maps
+		if random.random() < 0.5:
+			job.priority = job.VERY_HIGH
+		jobId = simulator.addJob(job)
+	
+	for jobID in simulator.jobsQueue:
+		myjob = simulator.jobs[jobID]
+		print myjob.jobId, myjob.priority, myjob.submit
+
+	sys.exit(0)
 
 if __name__ == "__main__":
 	# Parse options
@@ -16,6 +32,7 @@ if __name__ == "__main__":
 	parser.add_option("-l", "--log",                        dest="log",                   default=None,          help="specify log file")
 	
 	parser.add_option("-a", "--approx",                     dest="approx",  type="float", default=0.0, help="specify the approximation percentage")
+	parser.add_option("-s", "--sjf",                        dest="sjf",     type="float", default=0.0, help="specify the percentage of newly submitted job using SJF scheduling")
 	
 
 	(options, args) = parser.parse_args()
@@ -40,9 +57,12 @@ if __name__ == "__main__":
 		jobId = simulator.addJob(job)
 	'''
 	for i in range(0, 20):
-		job = Job(nmaps=64, lmap=140, lmapapprox=60, nreds=1, lred=15, submit=0)
+		job = Job(nmaps=64, lmap=140, lmapapprox=60, nreds=1, lred=15, submit=i*15)
 		job.approxAlgoMapVal = options.approx # Approximate 50% of the maps
+		if random.random() < options.sjf:
+			job.priority = Constants.VERY_HIGH
 		jobId = simulator.addJob(job)
+	
 	'''
 	for i in range(0, 20):
 		job = Job(nmaps=64, lmap=140, lmapapprox=60, nreds=1, lred=15, submit=i*200)
