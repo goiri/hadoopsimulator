@@ -23,12 +23,3 @@ def numberStr(number):
 	else:
 		return '%.1f' % number
 
-'''
-Define job priorities
-'''
-class Constants:
-	VERY_HIGH = 5
-	HIGH = 4
-	NORMAL = 3
-	LOW = 2
-	VERY_LOW = 1

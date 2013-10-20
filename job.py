@@ -1,7 +1,6 @@
 #!/usr/bin/env pypy
 
 from commons import isRealistic
-from commons import Constants
 
 import random
 if not isRealistic():
@@ -131,6 +130,14 @@ class Task:
 Represents a Hadoop job.
 """
 class Job:
+	# Job priorities
+	class Priority:
+		VERY_HIGH = 5
+		HIGH = 4
+		NORMAL = 3
+		LOW = 2
+		VERY_LOW = 1
+	
 	def __init__(self, jobId=None, nmaps=16, lmap=60, lmapapprox=None, nreds=1, lred=30, lredapprox=None, submit=0):
 		self.jobId = jobId
 		self.nmaps = nmaps
@@ -141,7 +148,7 @@ class Job:
 		self.lredapprox = lredapprox if lredapprox != None else self.lred
 		self.submit = submit # Submission time
 		
-		self.priority = Constants.NORMAL
+		self.priority = Job.Priority.NORMAL
 		
 		# Set queue execution state
 		self.reset()

@@ -5,7 +5,6 @@ from optparse import OptionParser
 import random
 import sys
 
-from commons import Constants
 from simulator import Simulator
 from node import Node
 from job import Job
