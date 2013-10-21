@@ -60,7 +60,7 @@ class Simulator:
 		
 		# Sort the queue according to submission order
 		#self.jobsQueue = sorted(self.jobsQueue, cmp=lambda jobId1, jobId2: self.jobs[jobId1].submit-self.jobs[jobId2].submit)
-		self.jobsQueue = sorted(self.jobsQueue, cmp=lambda jobId1, jobId2: self.jobs[jobId1].submit-self.jobs[jobId2].submit if self.jobs[jobId1].priority==self.jobs[jobId2].priority else self.jobs[jobId1].priority-self.jobs[jobId2].priority)
+		self.jobsQueue = sorted(self.jobsQueue, cmp=lambda jobId1, jobId2: self.jobs[jobId1].submit-self.jobs[jobId2].submit if self.jobs[jobId1].priority==self.jobs[jobId2].priority else self.jobs[jobId2].priority-self.jobs[jobId1].priority)
 		
 		return job.jobId
 	
