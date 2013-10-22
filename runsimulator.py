@@ -14,7 +14,7 @@ def unit_test():
 		job = Job(nmaps=64, lmap=140, lmapapprox=60, nreds=1, lred=15, submit=i*150)
 		job.approxAlgoMapVal = options.approx # Approximate 50% of the maps
 		if random.random() < 0.5:
-			job.priority = job.VERY_HIGH
+			job.priority = Job.Priority.VERY_HIGH
 		jobId = simulator.addJob(job)
 	
 	for jobID in simulator.jobsQueue:
@@ -55,6 +55,7 @@ if __name__ == "__main__":
 		job.approxAlgoMapVal = 0.0 # Approximate 50% of the maps
 		jobId = simulator.addJob(job)
 	'''
+	#unit_test()
 	for i in range(0, 20):
 		job = Job(nmaps=64, lmap=140, lmapapprox=60, nreds=1, lred=15, submit=i*15)
 		job.approxAlgoMapVal = options.approx # Approximate 50% of the maps
