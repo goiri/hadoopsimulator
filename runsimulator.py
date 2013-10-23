@@ -8,6 +8,7 @@ import sys
 from simulator import Simulator
 from node import Node
 from job import Job
+from workloadmanager import WorkloadManager
 
 def unit_test():
 	for i in range(0, 20):
@@ -32,6 +33,7 @@ if __name__ == "__main__":
 	
 	parser.add_option("-a", "--approx",                     dest="approx",  type="float", default=0.0, help="specify the approximation percentage")
 	parser.add_option("-s", "--sjf",                        dest="sjf",     type="float", default=0.0, help="specify the percentage of newly submitted job using SJF scheduling")
+	parser.add_option("-f", "--infile",  action="store", dest="infile", type="string", default="", help ="workload file")
 	
 
 	(options, args) = parser.parse_args()
@@ -56,12 +58,19 @@ if __name__ == "__main__":
 		jobId = simulator.addJob(job)
 	'''
 	#unit_test()
-	for i in range(0, 20):
-		job = Job(nmaps=64, lmap=140, lmapapprox=60, nreds=1, lred=15, submit=i*15)
-		job.approxAlgoMapVal = options.approx # Approximate 50% of the maps
-		if random.random() < options.sjf:
-			job.priority = Constants.VERY_HIGH
-		jobId = simulator.addJob(job)
+	manager = WorkloadManager()
+	if len(options.infile) > 0:
+		manager.InitSimulator(options.infile)
+		if options.sjf > 0.0:
+			manager.ApplySJFPriority(options.sjf)
+		manager.CopyToSimultor(simulator);
+	else:
+		for i in range(0, 20):
+			job = Job(nmaps=64, lmap=140, lmapapprox=60, nreds=1, lred=15, submit=i*15)
+			job.approxAlgoMapVal = options.approx # Approximate 50% of the maps
+			if random.random() < options.sjf:
+				job.priority = Constants.VERY_HIGH
+			jobId = simulator.addJob(job)
 	
 	'''
 	for i in range(0, 20):
