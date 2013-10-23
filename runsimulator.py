@@ -71,6 +71,7 @@ if __name__ == "__main__":
 		manager.copyToSimulator(simulator);
 		'''
 	else:
+		# Submit 20 jobs
 		for i in range(0, 20):
 			job = Job(nmaps=64, lmap=140, lmapapprox=60, nreds=1, lred=15, submit=i*15)
 			job.approxAlgoMapVal = options.approx # Approximate 50% of the maps

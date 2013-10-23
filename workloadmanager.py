@@ -39,7 +39,7 @@ class WorkloadManager:
 		#return lineno
 		return self.jobQueue
 	
-	def getJobs():
+	def getJobs(self):
 		return self.jobQueue
 	
 	'''
