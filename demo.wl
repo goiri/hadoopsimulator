@@ -1,3 +1,11 @@
+# number of maps
+# average map length
+# average approximate map length
+# number of reduces
+# average reduce length
+# average approximate reduce length <-- this is missing
+# submission time
+# approximation level
 64	140	60	1	15	5	0
 64	140	60	1	15	10	0
 64	140	60	1	15	15	0
