@@ -14,11 +14,9 @@ class WorkloadManager:
 		lineno=0
 		with open(inFile, "r") as f:
 			for line in f:
-				if not line.startswith('#'):
-					line = line.replace('\n', '')
-					line = line.strip()
-					if len(line)<=0:
-						continue
+				line = line.replace('\n', '')
+				line = line.strip()
+				if not line.startswith('#') or len(line) > 0:
 					# Job(nmaps=64, lmap=140, lmapapprox=60, nreds=1, lred=15, submit=i*150, approx)
 					splits = line.split()
 					nmaps0 =      int(splits[0])
@@ -46,3 +44,5 @@ class WorkloadManager:
 			jobId = simulator.addJob(job)
 			self.jobIdQueue.append(jobId)
 
+if __name__ == '__main__':
+	workload = WorkloadManager()
