@@ -58,12 +58,12 @@ if __name__ == "__main__":
 		jobId = simulator.addJob(job)
 	'''
 	#unit_test()
-	manager = WorkloadManager()
 	if len(options.infile) > 0:
+		manager = WorkloadManager()
 		manager.initManager(options.infile)
 		if options.sjf > 0.0:
 			manager.applySJFPriority(options.sjf)
-		manager.copyToSimultor(simulator);
+		manager.copyToSimulator(simulator);
 	else:
 		for i in range(0, 20):
 			job = Job(nmaps=64, lmap=140, lmapapprox=60, nreds=1, lred=15, submit=i*15)

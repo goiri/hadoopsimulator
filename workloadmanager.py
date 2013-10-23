@@ -16,7 +16,7 @@ class WorkloadManager:
 			for line in f:
 				line = line.replace('\n', '')
 				line = line.strip()
-				if not line.startswith('#') or len(line) > 0:
+				if not line.startswith('#') and len(line) > 0:
 					# Job(nmaps=64, lmap=140, lmapapprox=60, nreds=1, lred=15, submit=i*150, approx)
 					splits = line.split()
 					nmaps0 =      int(splits[0])
@@ -24,6 +24,7 @@ class WorkloadManager:
 					lmapapprox0 = int(splits[2])
 					nreds0 =      int(splits[3])
 					lred0 =       int(splits[4])
+					#lredapprox0 = int(splits[4]) # TODO cheng
 					submit0 =     int(splits[5])
 					approx0 =   float(splits[6])
 					# Create job
