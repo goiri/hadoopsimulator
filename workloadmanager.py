@@ -1,17 +1,21 @@
-import sys, random
+import sys
+import random
+
 from job import Job
 from simulator import Simulator
 
 '''
-InitSimulator
+Read workload from a file.
 '''	
 class WorkloadManager:
-        def __init__(self):
+        def __init__(self, filename=None):
 		self.jobQueue = []
-		self.jobIdQueue = []
+		if filename != None:
+			self.read(filename)
+		#self.jobIdQueue = []
 
-	def initManager(self, inFile):
-		lineno=0
+	def read(self, inFile):
+		#lineno=0
 		with open(inFile, "r") as f:
 			for line in f:
 				line = line.replace('\n', '')
@@ -31,10 +35,14 @@ class WorkloadManager:
 					job = Job(nmaps=nmaps0, lmap=lmap0, lmapapprox=lmapapprox0, nreds=nreds0, lred=lred0, submit=submit0)
 					job.approxAlgoMapVal = approx0 
 					self.jobQueue.append(job)
-					lineno+=1
-		f.close()
-		return lineno
+					#lineno+=1
+		#return lineno
+		return self.jobQueue
 	
+	def getJobs():
+		return self.jobQueue
+	
+	'''
 	def applySJFPriority(self, rate):
 		for job in self.jobQueue:
 			if random.random() < rate: 
@@ -44,6 +52,8 @@ class WorkloadManager:
 		for job in self.jobQueue:
 			jobId = simulator.addJob(job)
 			self.jobIdQueue.append(jobId)
+	'''
+	
 
 if __name__ == '__main__':
 	workload = WorkloadManager()

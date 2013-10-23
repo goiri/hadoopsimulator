@@ -59,11 +59,17 @@ if __name__ == "__main__":
 	'''
 	#unit_test()
 	if len(options.infile) > 0:
-		manager = WorkloadManager()
+		manager = WorkloadManager(options.infile)
+		for job in manager.getJobs():
+			if random.random() < options.sjf:
+				job.priority = Constants.VERY_HIGH
+			simulator.addJob(job)
+		'''
 		manager.initManager(options.infile)
 		if options.sjf > 0.0:
 			manager.applySJFPriority(options.sjf)
 		manager.copyToSimulator(simulator);
+		'''
 	else:
 		for i in range(0, 20):
 			job = Job(nmaps=64, lmap=140, lmapapprox=60, nreds=1, lred=15, submit=i*15)
