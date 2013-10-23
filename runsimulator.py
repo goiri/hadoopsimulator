@@ -60,10 +60,10 @@ if __name__ == "__main__":
 	#unit_test()
 	manager = WorkloadManager()
 	if len(options.infile) > 0:
-		manager.InitSimulator(options.infile)
+		manager.initManager(options.infile)
 		if options.sjf > 0.0:
-			manager.ApplySJFPriority(options.sjf)
-		manager.CopyToSimultor(simulator);
+			manager.applySJFPriority(options.sjf)
+		manager.copyToSimultor(simulator);
 	else:
 		for i in range(0, 20):
 			job = Job(nmaps=64, lmap=140, lmapapprox=60, nreds=1, lred=15, submit=i*15)

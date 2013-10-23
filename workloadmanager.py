@@ -10,7 +10,7 @@ class WorkloadManager:
 		self.jobQueue = []
 		self.jobIdQueue = []
 
-	def initSimulator(self, inFile):
+	def initManager(self, inFile):
 		lineno=0
 		with open(inFile, "r") as f:
 			for line in f:
