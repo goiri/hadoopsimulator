@@ -27,13 +27,19 @@ def unit_test():
 if __name__ == "__main__":
 	# Parse options
 	parser = OptionParser()
-	parser.add_option("-n", "--nodes",                      dest="nodes",     type="int", default=32,            help="number of nodes")
-	parser.add_option("-r", "--real",  action="store_true", dest="realistic",             default=False,         help="run a realistic simulation")
-	parser.add_option("-l", "--log",                        dest="log",                   default=None,          help="specify log file")
+	parser.add_option('-l', "--log",                        dest="log",                      default=None,  help="specify the log file")
 	
-	parser.add_option("-a", "--approx",                     dest="approx",  type="float", default=0.0, help="specify the approximation percentage")
-	parser.add_option("-s", "--sjf",                        dest="sjf",     type="float", default=0.0, help="specify the percentage of newly submitted job using SJF scheduling")
-	parser.add_option("-f", "--infile",  action="store", dest="infile", type="string", default="", help ="workload file")
+	parser.add_option('-n', "--nodes",                      dest="nodes",     type="int",    default=32,    help="specify the number of nodes")
+	parser.add_option('-j', "--jobs",                       dest="jobs",      type="int",    default=20,    help="specify the number of jobs")
+	parser.add_option('-g', "--gauss",                      dest="gauss",     type="float",  default=None,  help="specify the variance of the task length")
+	
+	parser.add_option('-a', "--approx",                     dest="approx",    type="float",  default=0.0,   help="specify the approximation percentage (0%)")
+	parser.add_option('-d', "--drop",                       dest="drop",      type="float",  default=100.0, help="specify the approximation percentage (100%)")
+	
+	parser.add_option('-r', "--real",  action="store_true", dest="realistic",                default=False, help="run a realistic simulation")
+	
+	parser.add_option('-s', "--sjf",                        dest="sjf",       type="float",  default=0.0,   help="specify the percentage of newly submitted job using SJF scheduling")
+	parser.add_option('-f', "--infile",                     dest="infile",    type="string", default="",    help="workload file")
 	
 
 	(options, args) = parser.parse_args()
@@ -72,9 +78,11 @@ if __name__ == "__main__":
 		'''
 	else:
 		# Submit 20 jobs
-		for i in range(0, 20):
+		for i in range(0, options.jobs):
 			job = Job(nmaps=64, lmap=140, lmapapprox=60, nreds=1, lred=15, submit=i*15)
-			job.approxAlgoMapVal = options.approx # Approximate 50% of the maps
+			job.approxAlgoMapVal = options.approx # Approximate X% of the maps
+			job.approxDropMapVal = options.drop   # Drop X% of the maps
+			job.gauss = options.gauss # +/-%
 			if random.random() < options.sjf:
 				job.priority = Constants.VERY_HIGH
 			jobId = simulator.addJob(job)
@@ -121,9 +129,10 @@ if __name__ == "__main__":
 	simulator.run()
 	
 	# Summary
-	print 'Energy: %.1fWh' % (simulator.getEnergy()/3600.0)
-	print 'Performance:', simulator.getPerformance(), len(simulator.jobs)
-	print 'Quality: %.1f%%' % (simulator.getQuality()*100.0)
+	print 'Nodes:   %d'  %      len(simulator.nodes)
+	print 'Energy:  %.1fWh'  % (simulator.getEnergy())
+	print 'Perf:    %.1fs %d jobs' % (simulator.getPerformance(), len(simulator.jobs))
+	print 'Quality: %.1f%%' % (simulator.getQuality())
 	
 	# for approx in `echo 0 0.2 0.4 0.6 0.8 1.0`; do for nodes in `echo 1 2 4 6 10 14 18 22`; do energy=`pypy runsimulator.py  --approx $approx --nodes 1`; echo $approx $nodes $energy; done; done
 	

@@ -172,10 +172,12 @@ class Simulator:
 				ret += 1
 		return ret
 	
+	# Energy in Wh
 	def getEnergy(self):
 		# J = Ws -> Wh
 		return self.energy/3600.0
 	
+	# Average time to run per job in seconds
 	def getPerformance(self):
 		ret = None
 		if len(self.jobs) > 0:
@@ -186,6 +188,7 @@ class Simulator:
 			ret = ret / len(self.jobs)
 		return ret
 	
+	# Average quality per job in %
 	def getQuality(self):
 		ret = []
 		for jobId in self.jobs:
@@ -208,7 +211,7 @@ class Simulator:
 			# =====================================================
 			completedAttempts = []
 			for node in self.nodes.values():
-				completedAttempts += node.progress(1)
+				completedAttempts += node.progress(1) # progress 1 second at a time
 			
 			# Mark completed maps
 			completedJobs = []

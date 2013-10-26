@@ -101,7 +101,7 @@ class HistoryViewer:
 	def getTaskGraph(self, attempt):
 		content = str(ID.getId(attempt.getTaskId()))
 		content = ''
-		out =  '<table  border="0" cellspacing="0" cellpadding="0">';
+		out =  '<table  border="0" cellspacing="0" cellpadding="0" style="border:1px solid:black;">';
 		out += '<tr height="5px">\n'; 
 		out += '<td width="' + str(floor(1.0*                attempt.start *self.zoom)) + 'px" bgcolor="white"/>\n'
 		out += '<td width="' + str(floor(1.0*(attempt.finish-attempt.start)*self.zoom)) + 'px" style="background-color:'+self.getTaskColor(attempt)+'; color:#FFFFFF; font-size:small" align="left">'+content+'</td>\n'
@@ -110,7 +110,7 @@ class HistoryViewer:
 		return out
 	
 	def getTaskGraphList(self, attempts):
-		out =  '<table  border="0" cellspacing="0" cellpadding="0">'
+		out =  '<table  border="0" cellspacing="0" cellpadding="0" style="border:1px solid black;">'
 		out += '<tr height="5px">\n'
 		prev = 0
 		for attempt in attempts:
@@ -125,7 +125,7 @@ class HistoryViewer:
 	
 	def getJobGraph(self, job):
 		content = ''
-		out =  '<table  border="0" cellspacing="0" cellpadding="0">';
+		out =  '<table  border="0" cellspacing="0" cellpadding="0" style="border:1px solid black;">';
 		out += '<tr height="5px">\n'; 
 		out += '<td width="' + str(floor(1.0*                job.submit *self.zoom)) + 'px" bgcolor="white"/>\n'
 		out += '<td width="' + str(floor(1.0*(job.start-job.submit)*self.zoom)) + 'px" style="background-color:#0000FF; color:#FFFFFF; font-size:small" align="left">'+content+'</td>\n'
@@ -135,7 +135,7 @@ class HistoryViewer:
 		return out
 	
 	def getNodeStatusGraphList(self, nodeStatuses):
-		out =  '<table  border="0" cellspacing="0" cellpadding="0">'
+		out =  '<table  border="0" cellspacing="0" cellpadding="0" style="border:1px solid black;">'
 		out += '<tr height="15px">\n'
 		prevNodeStatus = nodeStatuses[0]
 		for nodeStatus in nodeStatuses[1:]:
@@ -291,7 +291,7 @@ class HistoryViewer:
 			self.fileout.write('  <ul>\n')
 			self.fileout.write('    <li>Turn-around time: %.1fs</li>\n' % totalJobTime)
 			self.fileout.write('    <li>Runtime: %.1fs</li>\n' % totalJobRunTime)
-			self.fileout.write('    <li>Quality: %.1f%%</li>\n' % (100.0*totalJobQuality))
+			self.fileout.write('    <li>Quality: %.1f%%</li>\n' % totalJobQuality)
 			self.fileout.write('  </ul>\n')
 			self.fileout.write('  <li>Attempts: %d</li>\n' % len(attempts))
 			self.fileout.write('  <ul>\n')
@@ -306,14 +306,13 @@ class HistoryViewer:
 			self.fileout.write('  <li>Time: %s</li>\n' % timeStr(totaltime))
 			self.fileout.write('</ul>\n')
 			
-			print '%.2f %d' % (totalenergy/3600.0, totalJobTime)
-			
 			# Jobs
 			if self.plotJobs:
 				self.fileout.write('<h1>Jobs</h1>\n')
 				self.fileout.write('<table border="0" cellspacing="0" cellpadding="0">\n')
+				self.fileout.write('<tr><th width="100px">Id</th><th width="100px">Quality</th><th width="100px">Time</th></tr>\n')
 				for job in sorted(jobs.values(), key=attrgetter('finish')):
-					self.fileout.write('<tr><td>%s</td><td align="right">%.1f%%</td><td>%d+%ds &nbsp;</td><td>%s</td></tr>\n' %(job.jobId, 100.0*job.getQuality(), job.start-job.submit, job.finish-job.start, self.getJobGraph(job)))
+					self.fileout.write('<tr><td>%s</td><td align="right">%.1f%%</td><td align="right">%d+%ds &nbsp;</td><td>%s</td></tr>\n' %(job.jobId, job.getQuality(), job.start-job.submit, job.finish-job.start, self.getJobGraph(job)))
 				self.fileout.write('</table>\n')
 			
 			# Tasks

@@ -68,14 +68,14 @@ class Attempt:
 Represents a Hadoop task.
 """
 class Task:
-	def __init__(self, taskId=None, job=None, length=None, lengthapprox=None):
+	def __init__(self, taskId=None, job=None, length=None, lengthapprox=None, gauss=None):
 		self.job = job
 		self.taskId = taskId
 		self.length = length
 		self.lengthapprox = length
 		if lengthapprox != None:
 			self.lengthapprox = lengthapprox
-		self.gauss = None # Task length distribution in %
+		self.gauss = gauss # Task length distribution in %
 		self.attempts = {}
 		self.nattempts = 0
 		self.status = Job.Status.QUEUED # Status: QUEUED -> RUNNING -> SUCCEEDED | DROPPED
@@ -152,6 +152,7 @@ class Job:
 		self.nreds = nreds
 		self.lmap = lmap
 		self.lred = lred
+		self.gauss = None
 		self.lmapapprox = lmapapprox if lmapapprox != None else self.lmap
 		self.lredapprox = lredapprox if lredapprox != None else self.lred
 		self.submit = submit # Submission time
@@ -168,9 +169,9 @@ class Job:
 		self.approxAlgoRedVal = 0.0 # %
 		
 		# Dropping
-		self.approxDropMapMax = 0.0 # Max % => approxAlgoMapVal < approxAlgoMapMax
+		self.approxDropMapMin = 0.0 # Min % => approxDropMapVal > approxDropMapMin
 		self.approxDropMapVal = 0.0 # %
-		self.approxDropRedMax = 0.0 # Max % => approxAlgoRedVal < approxAlgoRedMax
+		self.approxDropRedMin = 0.0 # Min % => approxDropRedVal > approxDropRedMin
 		self.approxDropRedVal = 0.0 # %
 		
 		'''
@@ -199,10 +200,12 @@ class Job:
 		for nmap in range(0, self.nmaps):
 			taskId = '%s_m_%06d' % (self.jobId.replace('job_', 'task_'), nmap+1)
 			self.maps[taskId] = Task(taskId, self, self.lmap, self.lmapapprox)
+			self.maps[taskId].gauss = self.gauss
 		# Reduces
 		for nred in range(0, self.nreds):
 			taskId = '%s_r_%06d' % (self.jobId.replace('job_', 'task_'), nred+1)
 			self.reds[taskId] = Task(taskId, self, self.lred, self.lredapprox)
+			self.reds[taskId].gauss = self.gauss
 	
 	def getMapTask(self, approx=None):
 		for mapTask in self.maps.values():
@@ -314,10 +317,10 @@ class Job:
 		return ret
 	
 	def isMapDropping(self):
-		return 1.0*self.cmaps/len(self.maps) > self.approxDropMapVal
+		return 100.0*self.cmaps/len(self.maps) > self.approxDropMapVal
 	
 	def isRedDropping(self):
-		return 1.0*self.creds/len(self.reds) > self.approxDropRedVal
+		return 100.0*self.creds/len(self.reds) > self.approxDropRedVal
 	
 	# Drop an attempt
 	def dropAttempt(self, attempt):
