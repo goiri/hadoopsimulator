@@ -1,5 +1,7 @@
 #!/usr/bin/env pypy
 
+from job import Job
+
 """
 Represents
 """
@@ -39,8 +41,8 @@ class Node:
 				mapAttempt.drop()
 			# Check if the map is completed
 			if mapAttempt.isCompleted():
-				if mapAttempt.status != 'DROPPED':
-					mapAttempt.status = 'SUCCEEDED'
+				if mapAttempt.status != Job.Status.DROPPED:
+					mapAttempt.status = Job.Status.SUCCEEDED
 				self.maps.remove(mapAttempt)
 				ret.append(mapAttempt)
 		# Reduces
@@ -52,8 +54,8 @@ class Node:
 					redAttempt.drop()
 			# Check if the reduce is completed
 			if redAttempt.isCompleted():
-				if redAttempt.status != 'DROPPED':
-					redAttempt.status = 'SUCCEEDED'
+				if redAttempt.status != Job.Status.DROPPED:
+					redAttempt.status = Job.Status.SUCCEEDED
 				self.reds.remove(redAttempt)
 				ret.append(redAttempt)
 		return ret

@@ -18,12 +18,12 @@ class Attempt:
 	def __init__(self, attemptId=None, task=None, seconds=10, approx=False):
 		self.task = task
 		self.attemptId = attemptId
-		self.seconds = seconds
 		self.approx = approx
 		self.nodeId = None
 		self.start = None
 		self.finish = None
 		self.status = Job.Status.QUEUED
+		self.seconds = seconds # Remaining seconds
 	
 	def progress(self, p):
 		self.seconds -= p
@@ -141,10 +141,10 @@ class Job:
 	# Job status
 	#  QUEUED -> RUNNING -> SUCCEEDED | DROPPED
 	class Status:
-		QUEUED    = 0 # 'QUEUED'
-		RUNNING   = 1 # 'RUNNING'
-		SUCCEEDED = 2 # 'SUCCEEDED'
-		DROPPED   = 3 # 'DROPPED'
+		QUEUED    = 0
+		RUNNING   = 1
+		SUCCEEDED = 2
+		DROPPED   = 3
 	
 	def __init__(self, jobId=None, nmaps=16, lmap=60, lmapapprox=None, nreds=1, lred=30, lredapprox=None, submit=0):
 		self.jobId = jobId
@@ -213,7 +213,7 @@ class Job:
 				# We select the approximation according to a probability
 				if approx == None:
 					approx = False
-					if random.random() < self.approxAlgoMapVal:
+					if 100.0*random.random() < self.approxAlgoMapVal:
 						approx = True
 				return mapTask.getAttempt(approx=approx)
 		return None
@@ -285,7 +285,7 @@ class Job:
 		for task in self.maps.values() + self.reds.values():
 			for attempt in task.attempts.values():
 				total += 1
-				if attempt.approx or attempt.status == 'DROPPED':
+				if attempt.approx or attempt.status == Job.Status.DROPPED:
 					approximations += 1
 		if total > 0:
 			ret = 100.0 - 100.0*approximations/total

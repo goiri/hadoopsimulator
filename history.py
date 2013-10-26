@@ -109,15 +109,16 @@ class HistoryViewer:
 		out += '</table>\n'
 		return out
 	
-	def getTaskGraphList(self, attempts):
-		out =  '<table  border="0" cellspacing="0" cellpadding="0" style="border:1px solid black;">'
+	def getTaskGraphList(self, attempts, factor=10):
+		out =  '<table  border="0" cellspacing="0" cellpadding="0">'# style="border:1px solid black;">'
+		#out += '<tr height="20px">\n'
 		out += '<tr height="5px">\n'
 		prev = 0
 		for attempt in attempts:
 			content = str(ID.getId(attempt.getTaskId()))
 			content = ''
-			out += '<td width="' + str(floor(1.0*(attempt.start -   prev)*self.zoom)) + 'px" bgcolor="white"/>\n'
-			out += '<td width="' + str(floor(1.0*(attempt.finish-attempt.start)*self.zoom)) + 'px" style="background-color:'+self.getTaskColor(attempt)+'; color:#FFFFFF; font-size:small" align="left">'+content+'</td>\n'
+			out += '<td width="' + str(floor(1.0*factor*(attempt.start -   prev)*self.zoom)) + 'px" bgcolor="white"/>\n'
+			out += '<td width="' + str(floor(1.0*factor*(attempt.finish-attempt.start)*self.zoom)) + 'px" style="background-color:'+self.getTaskColor(attempt)+'; color:#FFFFFF; font-size:small; border-color:black; border:1px solid:black; border-style: inset; border-width:1px;" align="left">'+content+'</td>\n'
 			prev = attempt.finish
 		out += "</tr>";
 		out += "</table>\n";
@@ -159,8 +160,11 @@ class HistoryViewer:
 		return color
 	
 	def getTaskColor(self, attempt):
-		if attempt.status == "DROPPED":
-			color = "#000000"
+		if attempt.status == Job.Status.DROPPED:
+			if attempt.approx:
+				color = "#101010"
+			else:
+				color = "#000000"
 		elif attempt.isMap() and attempt.approx:
 			color = "#0000FF"
 		elif attempt.isMap():
@@ -203,11 +207,11 @@ class HistoryViewer:
 						if job.jobId == attempt.getJobId():
 							if attempt.isMap():
 								job.nmaps += 1
-								if attempt.approx or attempt.status == 'DROPPED':
+								if attempt.approx or attempt.status == Job.Status.DROPPED:
 									job.nmapsapprox += 1
 							if attempt.isMap():
 								job.nreds += 1
-								if attempt.approx or attempt.status == 'DROPPED':
+								if attempt.approx or attempt.status == Job.Status.DROPPED:
 									job.nredsapprox += 1
 					job.quality = 1.0 - (1.0*job.nmapsapprox/job.nmaps)
 					'''
@@ -220,7 +224,7 @@ class HistoryViewer:
 					attempt.start =  int(ret['START_TIME'])
 					attempt.finish = int(ret['FINISH_TIME'])
 					attempt.approx = (ret['APPROXIMATED'] == 'True' or ret['APPROXIMATED'] == 'true')
-					attempt.status = ret['TASK_STATUS']
+					attempt.status = int(ret['TASK_STATUS'])
 					attempt.nodeId = ret['HOSTNAME']
 					attempts.append(attempt)
 					# Update job information
@@ -247,9 +251,9 @@ class HistoryViewer:
 			for attempt in attempts:
 				if attempt.approx:
 					totalAttemptsApprox += 1
-				if attempt.status == 'DROPPED':
+				if attempt.status == Job.Status.DROPPED:
 					totalAttemptsDropped += 1
-				if attempt.status != 'DROPPED' and not attempt.approx:
+				if attempt.status != Job.Status.DROPPED and not attempt.approx:
 					totalAttemptsPrecise += 1
 				if attempt.nodeId not in nodeAttempts:
 					nodeAttempts[attempt.nodeId] = []
