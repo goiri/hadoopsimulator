@@ -43,6 +43,9 @@ class Simulator:
 		
 		# Outputs
 		self.energy = None
+		
+		# Step length
+		self.STEP = 1
 	
 	# Submit a job to run
 	def addJob(self, job):
@@ -105,21 +108,21 @@ class Simulator:
 		return ret
 	
 	# Get a queued map
-	def getMapTask(self, approx=None):
+	def getMapTask(self):
 		for jobId in self.jobsQueue:
 			job = self.jobs[jobId]
 			if self.t >= job.submit:
-				mapTask = job.getMapTask(approx=approx)
+				mapTask = job.getMapTask()
 				if mapTask != None:
 					return mapTask
 		return None
 	
 	# Get a queued reduce
-	def getRedTask(self, approx=None):
+	def getRedTask(self):
 		for jobId in self.jobsQueue:
 			job = self.jobs[jobId]
 			if self.t >= job.submit:
-				redTask = job.getRedTask(approx=approx)
+				redTask = job.getRedTask()
 				if redTask != None:
 					return redTask
 		return None
@@ -196,6 +199,9 @@ class Simulator:
 			ret.append(job.getQuality())
 		return sum(ret)/len(ret) if len(ret)>0 else 0.0
 	
+	def isTimeLimit(self):
+		return not (self.maxTime==None or self.t < self.maxTime)
+	
 	# Run simulation
 	def run(self):
 		self.energy = 0.0
@@ -206,12 +212,12 @@ class Simulator:
 			self.history.logNodeStatus(self.t, node)
 		
 		# Iterate every X seconds
-		while len(self.jobsQueue) > 0 and (self.maxTime == None or self.t < self.maxTime):
+		while len(self.jobsQueue) > 0 and not self.isTimeLimit():
 			# Run running tasks
 			# =====================================================
 			completedAttempts = []
 			for node in self.nodes.values():
-				completedAttempts += node.progress(1) # progress 1 second at a time
+				completedAttempts += node.progress(self.STEP) # progress 1 second at a time
 			
 			# Mark completed maps
 			completedJobs = []
@@ -316,8 +322,8 @@ class Simulator:
 			
 			self.energy += 1.0*power # s x W = J
 			
-			# Next period
-			self.t += 1
+			# Progress to next period
+			self.t += self.STEP
 		
 		# Log final output
 		if self.logfile != None:

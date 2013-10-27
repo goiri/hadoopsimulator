@@ -79,6 +79,7 @@ class Task:
 		self.attempts = {}
 		self.nattempts = 0
 		self.status = Job.Status.QUEUED # Status: QUEUED -> RUNNING -> SUCCEEDED | DROPPED
+		self.approx = False
 	
 	def isQueued(self):
 		if len(self.attempts) == 0:
@@ -95,17 +96,17 @@ class Task:
 	def isRed(self):
 		return self.taskId.rfind('_r_') >= 0
 	
-	def getAttempt(self, approx=False):
+	def getAttempt(self):
 		if len(self.attempts) == 0:
 			self.nattempts += 1
 			attemptId = (self.taskId+'_%d' % self.nattempts).replace('task_', 'attempt_')
-			seconds = self.length if not approx else self.lengthapprox
+			seconds = self.length if not self.approx else self.lengthapprox
 			if self.gauss != None:
 				seconds = random.gauss(seconds, self.gauss/100.0*seconds)
 				# Minimum task length
 				if seconds < 3:
 					seconds = 3
-			attempt = Attempt(attemptId=attemptId, task=self, seconds=seconds, approx=approx)
+			attempt = Attempt(attemptId=attemptId, task=self, seconds=seconds, approx=self.approx)
 			self.attempts[attempt.attemptId] = attempt
 			return attempt
 		else:
@@ -157,6 +158,7 @@ class Job:
 		self.lmapapprox = lmapapprox if lmapapprox != None else self.lmap
 		self.lredapprox = lredapprox if lredapprox != None else self.lred
 		self.submit = submit # Submission time
+		self.finish = None   # Finish time
 		
 		self.priority = Job.Priority.NORMAL
 		
@@ -170,10 +172,10 @@ class Job:
 		self.approxAlgoRedVal = 0.0 # %
 		
 		# Dropping
-		self.approxDropMapMin = 0.0 # Min % => approxDropMapVal > approxDropMapMin
-		self.approxDropMapVal = 0.0 # %
-		self.approxDropRedMin = 0.0 # Min % => approxDropRedVal > approxDropRedMin
-		self.approxDropRedVal = 0.0 # %
+		self.approxDropMapMin = 100.0 # Min % => approxDropMapVal > approxDropMapMin
+		self.approxDropMapVal = 100.0 # %
+		self.approxDropRedMin = 100.0 # Min % => approxDropRedVal > approxDropRedMin
+		self.approxDropRedVal = 100.0 # %
 		
 		'''
 		# Approximation
@@ -198,37 +200,43 @@ class Job:
 	
 	def initTasks(self):
 		# Maps
+		# Decide which maps are approximate
+		numMapApprox = int(round(self.nmaps*self.approxAlgoMapVal/100.0))
+		numMapPrecis = self.nmaps - numMapApprox
+		mapsApproximated = random.sample([True]*numMapApprox + [False]*numMapPrecis, self.nmaps)
+		# Initialize tasks
 		for nmap in range(0, self.nmaps):
 			taskId = '%s_m_%06d' % (self.jobId.replace('job_', 'task_'), nmap+1)
 			self.maps[taskId] = Task(taskId, self, self.lmap, self.lmapapprox)
 			self.maps[taskId].gauss = self.gauss
+			# Set approximation
+			self.maps[taskId].approx = mapsApproximated[nmap]
+		
 		# Reduces
+		# Decide which maps are approximate
+		numRedApprox = int(round(self.nreds*self.approxAlgoRedVal/100.0))
+		numRedPrecis = self.nreds - numRedApprox
+		redsApproximated = random.sample([True]*numRedApprox + [False]*numRedPrecis, self.nreds)
+		# Initialize tasks
 		for nred in range(0, self.nreds):
 			taskId = '%s_r_%06d' % (self.jobId.replace('job_', 'task_'), nred+1)
 			self.reds[taskId] = Task(taskId, self, self.lred, self.lredapprox)
 			self.reds[taskId].gauss = self.gauss
+			# Set approximation
+			self.reds[taskId].approx = redsApproximated[nred]
 	
-	def getMapTask(self, approx=None):
+	def getMapTask(self):
 		for mapTask in self.maps.values():
 			if mapTask.isQueued():
-				# We select the approximation according to a probability
-				if approx == None:
-					approx = False
-					if 100.0*random.random() < self.approxAlgoMapVal:
-						approx = True
-				return mapTask.getAttempt(approx=approx)
+				return mapTask.getAttempt()
 		return None
 	
-	def getRedTask(self, approx=None):
+	def getRedTask(self):
+		# Wait for the maps to finish. TODO slow start
 		if self.cmaps >= len(self.maps):
 			for redTask in self.reds.values():
 				if redTask.isQueued():
-					# We select the approximation according to a probability
-					if approx == None:
-						approx = False
-						if random.random() < self.approxAlgoRedVal:
-							approx = True
-					return redTask.getAttempt(approx=approx)
+					return redTask.getAttempt()
 		return None
 	
 	def mapQueued(self):
