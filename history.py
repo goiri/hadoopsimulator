@@ -70,7 +70,7 @@ class HistoryViewer:
 		if self.filenamein != None and self.filenameout != None:
 			self.filein =  open(self.filenamein,  'r')
 			self.fileout = open(self.filenameout, 'w')
-			self.zoom = 0.1
+			self.zoom = 0.8
 			
 			self.plotJobs = True
 			self.plotTasks = False
@@ -109,7 +109,7 @@ class HistoryViewer:
 		out += '</table>\n'
 		return out
 	
-	def getTaskGraphList(self, attempts, factor=10):
+	def getTaskGraphList(self, attempts):
 		out =  '<table  border="0" cellspacing="0" cellpadding="0">'# style="border:1px solid black;">'
 		#out += '<tr height="20px">\n'
 		out += '<tr height="5px">\n'
@@ -117,8 +117,8 @@ class HistoryViewer:
 		for attempt in attempts:
 			content = str(ID.getId(attempt.getTaskId()))
 			content = ''
-			out += '<td width="' + str(floor(1.0*factor*(attempt.start -   prev)*self.zoom)) + 'px" bgcolor="white"/>\n'
-			out += '<td width="' + str(floor(1.0*factor*(attempt.finish-attempt.start)*self.zoom)) + 'px" style="background-color:'+self.getTaskColor(attempt)+'; color:#FFFFFF; font-size:small; border-color:black; border:1px solid:black; border-style: inset; border-width:1px;" align="left">'+content+'</td>\n'
+			out += '<td width="' + str(floor(1.0*(attempt.start -   prev)*self.zoom)) + 'px" bgcolor="white"/>\n'
+			out += '<td width="' + str(floor(1.0*(attempt.finish-attempt.start)*self.zoom)) + 'px" style="background-color:'+self.getTaskColor(attempt)+'; color:#FFFFFF; font-size:small; border-color:black; border:1px solid:black; border-style: inset; border-width:1px;" align="left">'+content+'</td>\n'
 			prev = attempt.finish
 		out += "</tr>";
 		out += "</table>\n";
@@ -126,17 +126,17 @@ class HistoryViewer:
 	
 	def getJobGraph(self, job):
 		content = ''
-		out =  '<table  border="0" cellspacing="0" cellpadding="0" style="border:1px solid black;">';
+		out =  '<table  border="0" cellspacing="0" cellpadding="0">';
 		out += '<tr height="5px">\n'; 
 		out += '<td width="' + str(floor(1.0*                job.submit *self.zoom)) + 'px" bgcolor="white"/>\n'
-		out += '<td width="' + str(floor(1.0*(job.start-job.submit)*self.zoom)) + 'px" style="background-color:#0000FF; color:#FFFFFF; font-size:small" align="left">'+content+'</td>\n'
-		out += '<td width="' + str(floor(1.0*(job.finish-job.start)*self.zoom)) + 'px" style="background-color:#00FF00; color:#FFFFFF; font-size:small" align="left">'+content+'</td>\n'
+		out += '<td width="' + str(floor(1.0*(job.start-job.submit)*self.zoom)) + 'px" style="background-color:#0000FF; color:#FFFFFF; font-size:small; border-color:black; border:1px solid:black; border-style: inset; border-width:1px;" align="left">'+content+'</td>\n'
+		out += '<td width="' + str(floor(1.0*(job.finish-job.start)*self.zoom)) + 'px" style="background-color:#00FF00; color:#FFFFFF; font-size:small; border-color:black; border:1px solid:black; border-style: inset; border-width:1px;" align="left">'+content+'</td>\n'
 		out += '</tr>'
 		out += '</table>\n'
 		return out
 	
 	def getNodeStatusGraphList(self, nodeStatuses):
-		out =  '<table  border="0" cellspacing="0" cellpadding="0" style="border:1px solid black;">'
+		out =  '<table  border="0" cellspacing="0" cellpadding="0">'# style="border:1px solid black;">'
 		out += '<tr height="15px">\n'
 		prevNodeStatus = nodeStatuses[0]
 		for nodeStatus in nodeStatuses[1:]:
@@ -155,8 +155,10 @@ class HistoryViewer:
 			color = "#800000"
 		elif nodeStatus.startswith('WAKING'):
 			color = "#008000"
-		else:
+		elif nodeStatus.startswith('OFF'):
 			color = "#000000"
+		else:
+			color = "#101010"
 		return color
 	
 	def getTaskColor(self, attempt):
@@ -284,7 +286,7 @@ class HistoryViewer:
 			self.fileout.write('<html>\n')
 			self.fileout.write('<head>\n')
 			self.fileout.write('<link rel="stylesheet" type="text/css" href="http://sol018:50030/static/hadoop.css">\n')
-			self.fileout.write('<title></title>\n')
+			self.fileout.write('<title>Execution profile</title>\n')
 			self.fileout.write('</head>\n')
 			self.fileout.write('<body>\n')
 			
@@ -293,9 +295,9 @@ class HistoryViewer:
 			self.fileout.write('<ul>\n')
 			self.fileout.write('  <li>Jobs: %d</li>\n' % len(jobs))
 			self.fileout.write('  <ul>\n')
-			self.fileout.write('    <li>Turn-around time: %.1fs</li>\n' % totalJobTime)
-			self.fileout.write('    <li>Runtime: %.1fs</li>\n' % totalJobRunTime)
-			self.fileout.write('    <li>Quality: %.1f%%</li>\n' % totalJobQuality)
+			self.fileout.write('    <li>Average turn-around time: %.1fs</li>\n' % totalJobTime)
+			self.fileout.write('    <li>Average runtime: %.1fs</li>\n' % totalJobRunTime)
+			self.fileout.write('    <li>Average quality: %.1f%%</li>\n' % totalJobQuality)
 			self.fileout.write('  </ul>\n')
 			self.fileout.write('  <li>Attempts: %d</li>\n' % len(attempts))
 			self.fileout.write('  <ul>\n')
