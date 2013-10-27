@@ -32,11 +32,11 @@ class History:
 
 	def logJob(self, job):
 		if self.filename != None:
-			self.file.write('Job JOBID="%s" JOB_STATUS="%s" SUBMIT_TIME="%d" START_TIME="%d" FINISH_TIME="%d" .\n' % (job.jobId, job.status, job.submit, job.getStart(), job.getFinish()))
+			self.file.write('Job JOBID="%s" JOB_STATUS="%s" SUBMIT_TIME="%d" START_TIME="%d" FINISH_TIME="%d" .\n' % (job.jobId, Job.Status.toString[job.status], job.submit, job.getStart(), job.getFinish()))
 
 	def logTask(self, task):
 		if self.filename != None:
-			self.file.write('Task TASKID="%s" TASK_STATUS=%s" .\n' % (task.taskId, task.status))
+			self.file.write('Task TASKID="%s" TASK_STATUS=%s" .\n' % (task.taskId, Job.Status.toString[task.status]))
 	
 	def logAttempt(self, attempt):
 		if attempt.isMap():
@@ -46,11 +46,11 @@ class History:
 	
 	def logMapAttempt(self, attempt):
 		if self.filename != None:
-			self.file.write('MapAttempt TASKID="%s" TASK_ATTEMPT_ID="%s" TASK_STATUS="%s" APPROXIMATED="%s" START_TIME="%d" FINISH_TIME="%d" HOSTNAME="%s" .\n' % (attempt.getTaskId(), attempt.attemptId, attempt.status, str(attempt.approx), attempt.start, attempt.finish, attempt.nodeId))
+			self.file.write('MapAttempt TASKID="%s" TASK_ATTEMPT_ID="%s" TASK_STATUS="%s" APPROXIMATED="%s" START_TIME="%d" FINISH_TIME="%d" HOSTNAME="%s" .\n' % (attempt.getTaskId(), attempt.attemptId, Job.Status.toString[attempt.status], str(attempt.approx), attempt.start, attempt.finish, attempt.nodeId))
 	
 	def logReduceAttempt(self, attempt):
 		if self.filename != None:
-			self.file.write('ReduceAttempt TASKID="%s" TASK_ATTEMPT_ID="%s" TASK_STATUS="%s" APPROXIMATED="%s" START_TIME="%d" FINISH_TIME="%d" HOSTNAME="%s" .\n' % (attempt.getTaskId(), attempt.attemptId, attempt.status, str(attempt.approx), attempt.start, attempt.finish, attempt.nodeId))
+			self.file.write('ReduceAttempt TASKID="%s" TASK_ATTEMPT_ID="%s" TASK_STATUS="%s" APPROXIMATED="%s" START_TIME="%d" FINISH_TIME="%d" HOSTNAME="%s" .\n' % (attempt.getTaskId(), attempt.attemptId, Job.Status.toString[attempt.status], str(attempt.approx), attempt.start, attempt.finish, attempt.nodeId))
 		
 	def logNodeStatus(self, t, node):
 		if self.filename != None:
@@ -70,7 +70,7 @@ class HistoryViewer:
 		if self.filenamein != None and self.filenameout != None:
 			self.filein =  open(self.filenamein,  'r')
 			self.fileout = open(self.filenameout, 'w')
-			self.zoom = 0.8
+			self.zoom = 1.5
 			
 			self.plotJobs = True
 			self.plotTasks = False
@@ -162,7 +162,7 @@ class HistoryViewer:
 		return color
 	
 	def getTaskColor(self, attempt):
-		if attempt.status == Job.Status.DROPPED:
+		if attempt.status == Job.Status.toString[Job.Status.DROPPED]:
 			if attempt.approx:
 				color = "#101010"
 			else:
@@ -226,7 +226,7 @@ class HistoryViewer:
 					attempt.start =  int(ret['START_TIME'])
 					attempt.finish = int(ret['FINISH_TIME'])
 					attempt.approx = (ret['APPROXIMATED'] == 'True' or ret['APPROXIMATED'] == 'true')
-					attempt.status = int(ret['TASK_STATUS'])
+					attempt.status = ret['TASK_STATUS']
 					attempt.nodeId = ret['HOSTNAME']
 					attempts.append(attempt)
 					# Update job information

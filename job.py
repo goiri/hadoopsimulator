@@ -145,6 +145,7 @@ class Job:
 		RUNNING   = 1
 		SUCCEEDED = 2
 		DROPPED   = 3
+		toString = {QUEUED:'QUEUED', RUNNING:'RUNNING', SUCCEEDED:'SUCCEEDED', DROPPED:'DROPPED'}
 	
 	def __init__(self, jobId=None, nmaps=16, lmap=60, lmapapprox=None, nreds=1, lred=30, lredapprox=None, submit=0):
 		self.jobId = jobId

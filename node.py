@@ -20,6 +20,7 @@ class Node:
 		self.numReds = 1
 		
 		# Node description
+		# Atom from Parasol
 		self.powerSleep = 3 # W
 		self.powerIdle = 21 # W
 		self.powerFull = 29 # W
