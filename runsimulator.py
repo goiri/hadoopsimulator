@@ -82,7 +82,16 @@ if __name__ == "__main__":
 			job.gauss = options.gauss # +/-%
 			# Shortest job first policy, this is weird
 			if random.random() < options.sjf:
-				job.priority = Constants.VERY_HIGH
+				if lmap<300:
+					job.priority = Constants.VERY_HIGH
+				elif lmap < 900:
+					job.priority = Constants.HIGH
+				elif lmap < 1500:
+					job.priority = Constants.NORMAL
+				elif lmap < 2100:
+					job.priority = Constants.LOW
+				else:
+					job.priority = Constants.VERY_LOW
 			jobId = simulator.addJob(job)
 	
 	# Start running simulator
