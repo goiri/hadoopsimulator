@@ -37,6 +37,7 @@ if __name__ == "__main__":
 	parser.add_option('-d', "--drop",                       dest="drop",      type="float",  default=100.0, help="specify the approximation percentage (100%)")
 	
 	parser.add_option('-r', "--real",  action="store_true", dest="realistic",                default=False, help="run a realistic simulation")
+	parser.add_option('-m', "--manage",  action="store_true", dest="manage",                default=False, help="manage node disabled by default")
 	
 	parser.add_option('-s', "--sjf",                        dest="sjf",       type="float",  default=0.0,   help="specify the percentage of newly submitted job using SJF scheduling")
 	parser.add_option('-f', "--infile",                     dest="infile",    type="string", default="",    help="workload file")
@@ -63,8 +64,20 @@ if __name__ == "__main__":
 	if len(options.infile) > 0:
 		manager = WorkloadManager(options.infile)
 		for job in manager.getJobs():
+			job.approxAlgoMapVal = options.approx # Approximate X% of the maps
+			job.approxDropMapVal = options.drop   # Drop X% of the maps
 			if random.random() < options.sjf:
-				job.priority = Constants.VERY_HIGH
+				if job.nmaps<10:
+					job.priority = Job.Priority.VERY_HIGH
+				elif job.nmaps < 30:
+					job.priority = Job.Priority.HIGH
+				elif job.nmaps < 50:
+					job.priority = Job.Priority.NORMAL
+				elif job.nmaps < 70:
+					job.priority = Job.Priority.LOW
+				else:
+					job.priority = Job.Priority.VERY_LOW
+
 			simulator.addJob(job)
 		'''
 		manager.initManager(options.infile)
@@ -82,20 +95,11 @@ if __name__ == "__main__":
 			job.gauss = options.gauss # +/-%
 			# Shortest job first policy, this is weird
 			if random.random() < options.sjf:
-				if lmap<300:
-					job.priority = Constants.VERY_HIGH
-				elif lmap < 900:
-					job.priority = Constants.HIGH
-				elif lmap < 1500:
-					job.priority = Constants.NORMAL
-				elif lmap < 2100:
-					job.priority = Constants.LOW
-				else:
-					job.priority = Constants.VERY_LOW
+				job.priority = Constants.VERY_HIGH
 			jobId = simulator.addJob(job)
 	
 	# Start running simulator
-	simulator.run()
+	simulator.run(options.manage)
 	
 	# Summary
 	print 'Nodes:   %d'  %      len(simulator.nodes)

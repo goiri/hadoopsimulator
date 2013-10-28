@@ -18,7 +18,7 @@ from history import HistoryViewer
 from datetime import datetime
 
 '''
-Simulator.
+Simulator. Author: Inigo, Cheng
 '''
 class Simulator(Scheduler):
 	def __init__(self, logfile='history.log'):
@@ -202,9 +202,9 @@ class Simulator(Scheduler):
 		return not (self.maxTime==None or self.t < self.maxTime)
 	
 	# Run simulation
-	def run(self):
+	def run(self, manager):
 		self.energy = 0.0
-		
+		self.nodeManagement = manager	
 		# Log initial node status
 		for nodeId in self.nodes:
 			node = self.nodes[nodeId]

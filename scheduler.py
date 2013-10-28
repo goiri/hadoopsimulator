@@ -1,20 +1,30 @@
 #!/usr/bin/env pypy
 
 from job import Job
-
+'''
+Author: Inigo, Cheng
+'''
 class Scheduler:
+	class SchedType:
+		SJF    = 0
+		FIFO   = 1
+		FIFOPR = 2
+
 	def __init__(self):
 		# Jobs
 		self.jobs = {}
 		self.jobsQueue = []
 		self.jobsDone = []
-	
+		self.schedType = Scheduler.SchedType.FIFOPR
 	'''
 	Scheduling policies.
 	Returns the order of 2 jobs according to the scheduling policy
 	'''
 	def schedulingPolicy(self, jobId1, jobId2):
-		return self.schedulingFIFOprior(jobId1, jobId2)
+		if self.schedType == Scheduler.SchedType.SJF:
+			return self.schedulingSJF(jobId1, jobId2)
+		elif self.schedType == Scheduler.SchedType.FIFOPR:
+			return self.schedulingFIFOprior(jobId1, jobId2)
 		
 		
 	def schedulingFIFO(self, jobId1, jobId2):
