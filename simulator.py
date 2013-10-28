@@ -11,6 +11,7 @@ from operator import attrgetter
 
 from node import Node
 from job import Job
+from scheduler import Scheduler
 from history import History
 from history import HistoryViewer
 
@@ -19,15 +20,14 @@ from datetime import datetime
 '''
 Simulator.
 '''
-class Simulator:
+class Simulator(Scheduler):
 	def __init__(self, logfile='history.log'):
+		# Initialize the scheduler
+		Scheduler.__init__(self) # super()
+		
 		self.t = 0
 		# Nodes
 		self.nodes = {}
-		# Jobs
-		self.jobs = {}
-		self.jobsQueue = []
-		self.jobsDone = []
 		# History
 		self.logfile = logfile
 		self.history = History(filename=self.logfile)
@@ -65,30 +65,7 @@ class Simulator:
 		self.jobsQueue = sorted(self.jobsQueue, cmp=self.schedulingPolicy)
 		
 		return job.jobId
-	
-	'''
-	Scheduling policies.
-	Returns the order of 2 jobs according to the scheduling policy
-	'''
-	def schedulingPolicy(self, jobId1, jobId2):
-		return self.schedulingFIFOprior(jobId1, jobId2)
-		
-		
-	def schedulingFIFO(self, jobId1, jobId2):
-		return self.jobs[jobId1].submit-self.jobs[jobId2].submit
-	
-	def schedulingFIFOprior(self, jobId1, jobId2):
-		if self.jobs[jobId1].priority==self.jobs[jobId2].priority:
-			return self.jobs[jobId1].submit-self.jobs[jobId2].submit
-		else:
-			return self.jobs[jobId2].priority-self.jobs[jobId1].priority
-	
-	def schedulingSJF(self, jobId1, jobId2):
-		# TODO cheng
-		# One approach can be to check length of the jobs in the queue
-		# Sort it according to the length
-		return self.jobs[jobId2].nmaps*self.jobs[jobId2].lmap - self.jobs[jobId1].nmaps*self.jobs[jobId1].lmap
-	
+
 	# Check if there is any idle node for reduces
 	def getIdleNodeMap(self):
 		for nodeId in sorted(self.nodes):
