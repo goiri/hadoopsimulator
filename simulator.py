@@ -11,7 +11,7 @@ from operator import attrgetter
 
 from node import Node
 from job import Job
-from scheduler import Scheduler
+from schedulerpolicy import SchedulerPolicy
 from history import History
 from history import HistoryViewer
 
@@ -20,10 +20,10 @@ from datetime import datetime
 '''
 Simulator. Author: Inigo, Cheng
 '''
-class Simulator(Scheduler):
+class Simulator(SchedulerPolicy):
 	def __init__(self, logfile='history.log'):
 		# Initialize the scheduler
-		Scheduler.__init__(self) # super()
+		SchedulerPolicy.__init__(self) # super()
 		
 		self.t = 0
 		# Nodes
@@ -202,9 +202,9 @@ class Simulator(Scheduler):
 		return not (self.maxTime==None or self.t < self.maxTime)
 	
 	# Run simulation
-	def run(self, manager):
+	def run(self):
 		self.energy = 0.0
-		self.nodeManagement = manager	
+		
 		# Log initial node status
 		for nodeId in self.nodes:
 			node = self.nodes[nodeId]

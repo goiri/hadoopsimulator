@@ -4,8 +4,8 @@ from job import Job
 '''
 Author: Inigo, Cheng
 '''
-class Scheduler:
-	class SchedType:
+class SchedulerPolicy:
+	class Type:
 		SJF    = 0
 		FIFO   = 1
 		FIFOPR = 2
@@ -15,15 +15,15 @@ class Scheduler:
 		self.jobs = {}
 		self.jobsQueue = []
 		self.jobsDone = []
-		self.schedType = Scheduler.SchedType.FIFOPR
+		self.schedType = SchedulerPolicy.Type.FIFOPR
 	'''
 	Scheduling policies.
 	Returns the order of 2 jobs according to the scheduling policy
 	'''
 	def schedulingPolicy(self, jobId1, jobId2):
-		if self.schedType == Scheduler.SchedType.SJF:
+		if self.schedType == SchedulerPolicy.Type.SJF:
 			return self.schedulingSJF(jobId1, jobId2)
-		elif self.schedType == Scheduler.SchedType.FIFOPR:
+		elif self.schedType == SchedulerPolicy.Type.FIFOPR:
 			return self.schedulingFIFOprior(jobId1, jobId2)
 		
 		
