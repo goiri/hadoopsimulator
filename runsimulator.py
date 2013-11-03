@@ -29,7 +29,7 @@ if __name__ == "__main__":
 	parser = OptionParser()
 	parser.add_option('-l', "--log",                        dest="log",                      default=None,  help="specify the log file")
 	
-	parser.add_option('-n', "--nodes",                      dest="nodes",     type="int",    default=32,    help="specify the number of nodes")
+	parser.add_option('-n', "--nodes",                      dest="nodes",     type="int",    default=12,    help="specify the number of nodes")
 	parser.add_option('-j', "--jobs",                       dest="jobs",      type="int",    default=20,    help="specify the number of jobs")
 	parser.add_option('-g', "--gauss",                      dest="gauss",     type="float",  default=None,  help="specify the variance of the task length")
 	
@@ -62,18 +62,19 @@ if __name__ == "__main__":
 	
 	# Add jobs
 	if len(options.infile) > 0:
+		simulator.nodeManagement = options.manage
 		manager = WorkloadManager(options.infile)
 		for job in manager.getJobs():
 			job.approxAlgoMapVal = options.approx # Approximate X% of the maps
 			job.approxDropMapVal = options.drop   # Drop X% of the maps
 			if random.random() < options.sjf:
-				if job.nmaps<10:
+				if job.nreds<3:
 					job.priority = Job.Priority.VERY_HIGH
-				elif job.nmaps < 30:
+				elif job.nreds < 4:
 					job.priority = Job.Priority.HIGH
-				elif job.nmaps < 50:
+				elif job.nreds < 5:
 					job.priority = Job.Priority.NORMAL
-				elif job.nmaps < 70:
+				elif job.nreds < 6:
 					job.priority = Job.Priority.LOW
 				else:
 					job.priority = Job.Priority.VERY_LOW
@@ -99,7 +100,7 @@ if __name__ == "__main__":
 			jobId = simulator.addJob(job)
 	
 	# Start running simulator
-	simulator.run(options.manage)
+	simulator.run()
 	
 	# Summary
 	print 'Nodes:   %d'  %      len(simulator.nodes)
