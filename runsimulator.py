@@ -29,7 +29,9 @@ if __name__ == "__main__":
 	parser = OptionParser()
 	parser.add_option('-l', "--log",                        dest="log",                      default=None,  help="specify the log file")
 	
-	parser.add_option('-n', "--nodes",                      dest="nodes",     type="int",    default=12,    help="specify the number of nodes")
+	parser.add_option('-n', "--nodes",                      dest="nodes",     type="int",    default=9,    help="specify the number of nodes")
+	parser.add_option('-x', "--mapslot",                      dest="mapslot",     type="int",    default=4,    help="specify the number of map slots")
+	parser.add_option('-y', "--redslot",                      dest="redslot",     type="int",    default=1,    help="specify the number of reduce slots")
 	parser.add_option('-j', "--jobs",                       dest="jobs",      type="int",    default=20,    help="specify the number of jobs")
 	parser.add_option('-g', "--gauss",                      dest="gauss",     type="float",  default=None,  help="specify the variance of the task length")
 	
@@ -51,6 +53,8 @@ if __name__ == "__main__":
 	# Add servers
 	for i in range(0, options.nodes):
 		simulator.nodes['sol%03d' % i] = Node('sol%03d' % i)
+		simulator.nodes['sol%03d' % i].numMaps = options.mapslot
+		simulator.nodes['sol%03d' % i].redMaps = options.redslot
 	'''
 	# Set some servers to start sleeping
 	for i in range(4, 8):
