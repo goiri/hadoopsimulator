@@ -10,6 +10,42 @@ from node import Node
 from job import Job
 from workloadmanager import WorkloadManager
 
+def getPriority(nReds):
+	if nReds<3:
+		return Job.Priority.VERY_HIGH
+	elif nReds < 4:
+		return Job.Priority.HIGH
+	elif nReds < 5:
+		return Job.Priority.NORMAL
+	elif nReds < 6:
+		return Job.Priority.LOW
+	else:
+		return Job.Priority.VERY_LOW
+
+def getProbabilisticSJF(nReds, prob):
+	if random.random() < prob:
+		return getPriority(nReds)
+	else:
+		return Job.Priority.NORMAL	
+
+def parseSchedule(sched):
+	tmp = []
+	res = {}
+	tmp = sched.split(',')
+	perc = 0.0
+	for e in tmp:
+		(k,v) = e.split(':')
+		perc += float(k)
+		res[perc] = v;
+	return res
+
+def getProbBySchedule(d, nReds):
+	t = random.random()
+	for i in sorted(d):	
+		if t<=i:
+			return getProbabilisticSJF(nReds, d[i])
+			
+
 def unit_test():
 	for i in range(0, 20):
 		job = Job(nmaps=64, lmap=140, lmapapprox=60, nreds=1, lred=15, submit=i*150)
@@ -38,10 +74,11 @@ if __name__ == "__main__":
 	parser.add_option('-a', "--approx",                     dest="approx",    type="float",  default=0.0,   help="specify the approximation percentage (0%)")
 	parser.add_option('-d', "--drop",                       dest="drop",      type="float",  default=100.0, help="specify the approximation percentage (100%)")
 	
-	parser.add_option('-r', "--real",  action="store_true", dest="realistic",                default=False, help="run a realistic simulation")
-	parser.add_option('-m', "--manage",  action="store_true", dest="manage",                default=False, help="manage node disabled by default")
+	parser.add_option('-r', "--real",action="store_true", dest="realistic", default=False, help="run a realistic simulation")
+	parser.add_option('-m',"--manage",action="store_true",dest="manage",default=False,help="manage node disabled by default")
 	
 	parser.add_option('-s', "--sjf",                        dest="sjf",       type="float",  default=0.0,   help="specify the percentage of newly submitted job using SJF scheduling")
+	parser.add_option('-w', "--weight",                        dest="weight",       type="string",  default="",   help="specify the detailed cheduling weight [X%:Y]")
 	parser.add_option('-f', "--infile",                     dest="infile",    type="string", default="",    help="workload file")
 	
 
@@ -68,21 +105,15 @@ if __name__ == "__main__":
 	if len(options.infile) > 0:
 		simulator.nodeManagement = options.manage
 		manager = WorkloadManager(options.infile)
+		weights = {}
+		weights = parseSchedule(options.weight)
 		for job in manager.getJobs():
 			job.approxAlgoMapVal = options.approx # Approximate X% of the maps
 			job.approxDropMapVal = options.drop   # Drop X% of the maps
-			if random.random() < options.sjf:
-				if job.nreds<3:
-					job.priority = Job.Priority.VERY_HIGH
-				elif job.nreds < 4:
-					job.priority = Job.Priority.HIGH
-				elif job.nreds < 5:
-					job.priority = Job.Priority.NORMAL
-				elif job.nreds < 6:
-					job.priority = Job.Priority.LOW
-				else:
-					job.priority = Job.Priority.VERY_LOW
-
+			if len(weights)>0:
+				job.priority=getProbBySchedule(weights, job.nreds)
+			else:
+				job.priority=getPriority(job.nreds);
 			simulator.addJob(job)
 		'''
 		manager.initManager(options.infile)
@@ -99,8 +130,7 @@ if __name__ == "__main__":
 			job.approxDropMapVal = options.drop   # Drop X% of the maps
 			job.gauss = options.gauss # +/-%
 			# Shortest job first policy, this is weird
-			if random.random() < options.sjf:
-				job.priority = Constants.VERY_HIGH
+			job.priority = getProbabilisticSJF(job.nreds, options.sjf)
 			jobId = simulator.addJob(job)
 	
 	# Start running simulator
