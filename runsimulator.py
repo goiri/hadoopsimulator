@@ -31,12 +31,14 @@ def getProbabilisticSJF(nReds, prob):
 def parseSchedule(sched):
 	tmp = []
 	res = {}
+	if len(sched)<=0:
+		return res
 	tmp = sched.split(',')
 	perc = 0.0
 	for e in tmp:
 		(k,v) = e.split(':')
 		perc += float(k)
-		res[perc] = v;
+		res[perc] = float(v)
 	return res
 
 def getProbBySchedule(d, nReds):
@@ -113,7 +115,7 @@ if __name__ == "__main__":
 			if len(weights)>0:
 				job.priority=getProbBySchedule(weights, job.nreds)
 			else:
-				job.priority=getPriority(job.nreds);
+				job.priority=getProbabilisticSJF(job.nreds, options.sjf)
 			simulator.addJob(job)
 		'''
 		manager.initManager(options.infile)
@@ -129,7 +131,7 @@ if __name__ == "__main__":
 			job.approxAlgoMapVal = options.approx # Approximate X% of the maps
 			job.approxDropMapVal = options.drop   # Drop X% of the maps
 			job.gauss = options.gauss # +/-%
-			# Shortest job first policy, this is weird
+			# Probabilistic shortest job first policy 
 			job.priority = getProbabilisticSJF(job.nreds, options.sjf)
 			jobId = simulator.addJob(job)
 	
