@@ -102,7 +102,7 @@ class Task:
 			attemptId = (self.taskId+'_%d' % self.nattempts).replace('task_', 'attempt_')
 			seconds = self.length if not self.approx else self.lengthapprox
 			if self.gauss != None:
-				seconds = random.gauss(seconds, self.gauss/100.0*seconds)
+				seconds = int(random.gauss(seconds, self.gauss/100.0*seconds))
 				# Minimum task length
 				if seconds < 3:
 					seconds = 3
@@ -154,7 +154,8 @@ class Job:
 		self.nreds = nreds
 		self.lmap = lmap
 		self.lred = lred
-		self.gauss = None
+		#self.gauss = None
+		self.gauss = 20
 		self.lmapapprox = lmapapprox if lmapapprox != None else self.lmap
 		self.lredapprox = lredapprox if lredapprox != None else self.lred
 		self.submit = submit # Submission time

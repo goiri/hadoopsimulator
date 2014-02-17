@@ -1,16 +1,128 @@
 use strict;
-
+use warnings;
+use File::Basename;
 sub ParseRes {
-	my ($fname) = @_;
+	my ($fname, $foutDir) = @_;
+	my($base, $path, $ext) = fileparse($fname);
+	my %jobHash=();
+	my %mapHash=();
+	my %reduceHash=();
+	my %mapQHash=();
+	my %mapEndTimeHash=();
+	my %reduceQHash=();
+	my $jobID;
+	my @qtime;
 	open IN, "<$fname" or die "$!\n";
 	while (my $line = <IN>) {
 		chomp $line;
-		next unless $line=~/JOBID/;
-		$line =~ /SUBMIT_TIME=\"(\d+)\" START_TIME=\"(\d+)\" FINISH_TIME=\"(\d+)\"/; 
-		#print "$1, $2, $3\n";
-		print $3-$1, "\n";
+		my $mykey=();
+		my @val=();
+		if ($line=~/JOBID/) {
+			$line =~ /JOBID=\"(.*)\" JOB_STATUS=\"(.*)\" SUBMIT_TIME=\"(\d+)\" START_TIME=\"(\d+)\" FINISH_TIME=\"(\d+)\"/; 
+			@val=($1, $2, $3, $4, $5);
+			$mykey=$1;
+			$mykey =~ s/job_//g;
+			$jobHash{$mykey}=\@val;
+			#print "$1, $2, $3\n";
+		}
+		if ($line=~/MapAttempt/) {
+			$line =~ /TASKID=\"(.*)\" TASK_ATTEMPT_ID/; 
+			$mykey=$1;
+			$line =~ / START_TIME=\"(\d+)\" FINISH_TIME=\"(\d+)\"/; 
+			@val=($mykey, $1, $2);
+			$mykey =~ s/task_//g;
+			$mapHash{$mykey}=\@val;
+			if ($mykey=~/(.*)_m_/) {
+				$jobID=$1;
+				if (!defined $mapEndTimeHash{$jobID}) {
+					$mapEndTimeHash{$jobID}=$val[2];
+				} elsif ($mapEndTimeHash{$jobID}<$val[2]) {
+					$mapEndTimeHash{$jobID}=$val[2];
+				}
+			}
+			#print "$1, $2, $3\n";
+		}
+		if ($line=~/ReduceAttempt/) {
+			$line =~ /TASKID=\"(.*)\" TASK_ATTEMPT_ID/; 
+			$mykey=$1;
+			$line =~ / START_TIME=\"(\d+)\" FINISH_TIME=\"(\d+)\"/; 
+			@val=($mykey, $1, $2);
+			$mykey =~ s/task_//g;
+			$reduceHash{$mykey}=\@val;
+			#print "$1, $2, $3\n";
+		}
+
 	}
 	close IN;
+	#job
+	open OUT, ">$foutDir/$base.dat";
+	for my $k(sort keys %jobHash) {
+		print OUT $jobHash{$k}->[4]-$jobHash{$k}->[2], "\n";
+	}
+	close OUT;
+
+	open OUT, ">$foutDir/$base.job";
+	for my $k(sort keys %jobHash) {
+		my $valRef = $jobHash{$k};
+		my $concat = join ":", @$valRef;
+		print OUT $k, "=", $concat, "\n";
+	}
+	close OUT;
+	#map
+	open OUT, ">$foutDir/$base.mtime";
+	open OUT1, ">$foutDir/$base.mqtime";
+	for my $k(sort keys %mapHash) {
+		my $valRef = $mapHash{$k};
+		print OUT $valRef->[2] - $valRef->[1], "\n";
+		if ($k=~/(.*)_m_/) {
+			$jobID=$1;
+			#submit time, start time
+			@qtime=($jobHash{$jobID}->[2], $valRef->[1]);
+			print OUT1 $valRef->[1]-$jobHash{$jobID}->[2], "\n";
+			$mapQHash{$k}=\@qtime;
+		}
+	}
+	close OUT1;
+	close OUT;
+
+	open OUT, ">$foutDir/$base.mtask";
+	for my $k(sort keys %mapHash) {
+		my $valRef = $mapHash{$k};
+		my $concat = join ":", @$valRef;
+		print OUT $k, "=M=", $concat, "\n";
+		my $valRef1 = $mapQHash{$k};
+		my $concat1 = join ":", @$valRef1;
+		print OUT $k, "=MQ=", $concat1, "\n";
+	}
+	close OUT;
+	#reduce
+	open OUT, ">$foutDir/$base.rtime";
+	open OUT1, ">$foutDir/$base.rqtime";
+	for my $k(sort keys %reduceHash) {
+		my $valRef = $reduceHash{$k};
+		print OUT $valRef->[2] - $valRef->[1], "\n";
+		if ($k=~/(.*)_r_/) {
+			$jobID=$1;
+			#submit time, start time
+			@qtime=($mapEndTimeHash{$jobID}, $valRef->[1]);
+			print OUT1 $valRef->[1]-$mapEndTimeHash{$jobID}, "\n";
+			$reduceQHash{$k}=\@qtime;
+		}
+	}
+	close OUT1;
+	close OUT;
+
+	open OUT, ">$foutDir/$base.rtask";
+	for my $k(sort keys %reduceHash) {
+		my $valRef = $reduceHash{$k};
+		my $concat = join ":", @$valRef;
+		print OUT $k, "=R=", $concat, "\n";
+		my $valRef2 = $reduceQHash{$k};
+		my $concat2 = join ":", @$valRef2;
+		print OUT $k, "=RQ=", $concat2, "\n";
+	}
+	close OUT;
+
 	return 0;
 }
 

@@ -70,7 +70,8 @@ class HistoryViewer:
 		if self.filenamein != None and self.filenameout != None:
 			self.filein =  open(self.filenamein,  'r')
 			self.fileout = open(self.filenameout, 'w')
-			self.zoom = 0.5
+			#self.zoom = 0.5
+			self.zoom = 0.2
 			
 			self.plotJobs = True
 			self.plotTasks = False
