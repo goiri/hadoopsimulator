@@ -14,7 +14,7 @@ from job import Job
 from schedulerpolicy import SchedulerPolicy
 from history import History
 from history import HistoryViewer
-
+import sys
 from datetime import datetime
 
 '''
@@ -36,8 +36,10 @@ class Simulator(SchedulerPolicy):
 		# Simulation
 		self.maxTime = None
 		# Id for jobs
-		self.trackerId = datetime.now().strftime('%4Y%2m%2d%2H%2M')
-		
+		if sys.platform == 'win32':
+			self.trackerId = datetime.now().strftime('%Y%m%d%H%M')
+		else:
+			self.trackerId = datetime.now().strftime('%4Y%2m%2d%2H%2M')
 		# Specify if the nodes are sent to sleep when there's no load
 		self.nodeManagement = True
 		
