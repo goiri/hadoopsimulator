@@ -57,8 +57,36 @@ function measure {
 	wait $PID
 }
 
-
+function profile_entire_FB_trace {
+	TRACE=$1
+	NUM=$2
+	OUTDIR=$3
+	MYID=1
+	MYPID=90
+	for nodes in 9 18 36 72 144;do
+		for sjf in `echo 0.0`; do
+			for drop in 100; do
+				OUTBASE=`echo $TRACE|sed 's/\//_/g'`
+				OUTFILE=$OUTDIR/$OUTBASE"_"res_D$drop\_S$sjf\_N$nodes
+				pypy runsimulator.py -f $TRACE -d $drop -s $sjf -l $OUTFILE -n $nodes & 
+				MYPID=$!
+				let MYID=$MYID+1
+				if [ 0 -eq $((MYID%$NUM)) ];then
+					wait $MYPID
+				fi 
+				#perl parse_hadoop_sim.pl $OUTFILE $OUTDIR
+				#python ../../repos/create-cdf-data.py $OUTFILE\.dat > $OUTFILE\.res
+				#mv history.html $OUTFILE\.html
+			done
+		done
+	done
+	#myplot $OUTDIR var_sjf_d100
+	#convert $OUTDIR/var_sjf_d100.eps $OUTDIR/var_sjf_d100.png
+	wait $MYPID
+}
 
 ##time ru
-time measure $*
+#time measure $*
+profile_entire_FB_trace $*
+
 
